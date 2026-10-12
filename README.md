@@ -76,8 +76,50 @@ and restart Claude Desktop:
 }
 ```
 
+## Example run
+
+Prompt in Claude Code: *Write and save listings for every product that does not
+have one yet.* The agent listed the catalogue, read the facts and the brand
+guide for each product, checked every draft and saved all 8 listings
+(`data/listings.json`). Two of them:
+
+> **Moss & Pebble Silicone Teether Ring, BPA-free** (12/12)
+>
+> This teether ring gives your baby something to chew on when new teeth are
+> coming through. It is made from food-grade silicone, is BPA-free and meets the
+> EN 71 toy standard. The textured surface is made for sore gums, and the ring is
+> easy for small hands to hold. You can cool it in the fridge before use. Choose
+> Sage or Sand. It goes in the dishwasher on the top rack. Suitable for babies
+> aged 3 months+.
+
+> **Nordvik Kids Rain Jacket with Detachable Hood** (12/12)
+>
+> This rain jacket is made for wet walks to school and puddle days at the park.
+> It is made from recycled polyester with a PU coating, and the seams are taped.
+> The hood is detachable, and reflective details on the back and sleeves help
+> your child be seen on darker days. Choose from Mustard or Navy. Machine wash at
+> 30 °C and do not tumble dry. Suitable for children aged 2-8 years.
+
+For the teether, the agent rewrote the product data's "dishwasher safe" as "goes
+in the dishwasher on the top rack" and avoided "soothing", because the brand
+guide bans safety and medical promises.
+
+## What the first run showed
+
+Every draft passed all 12 rules on the first check, so the agent never had to
+fix anything. That sounds good, but the agent's own report pointed out phrases
+that go beyond the product data and still passed: "keeps small hands warm",
+"easy to put on", "help your child be seen".
+
+The rules catch what can be counted or matched (length, materials, banned
+words, certifications). They cannot tell whether a benefit is supported by the
+facts. That is the next check to build.
+
 ## Next steps
 
+- A "supported claims" check: compare every sentence with the product facts
+  (for example with a second model as a judge, tested on hand-labelled
+  sentences) and flag benefits the data does not support.
 - Read products from a real shop API (Shopify) instead of a JSON file.
 - A second agent for purchasing that uses `get_sales_and_stock` to suggest orders.
 - A coordinating agent that hands tasks to the listing and purchasing agents.
