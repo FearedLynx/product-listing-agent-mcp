@@ -61,6 +61,32 @@ def test_missing_material_is_caught():
     assert "materials mentioned" in failed(listing)
 
 
+@pytest.mark.parametrize("sentence", [
+    " Small imperfections in the knit make each one unique.",   # 'perfect' inside a word
+    " The cuff secures with one press stud.",                  # 'cures' inside a word
+])
+def test_banned_words_inside_other_words_are_allowed(sentence):
+    assert "no banned claims" not in failed({**GOOD, "description": GOOD["description"] + sentence})
+
+
+@pytest.mark.parametrize("sentence", [
+    " It is a perfect fit.",
+    " It is 100% safe.",
+    " The Best romper ever.",
+])
+def test_banned_claims_as_whole_words_are_still_caught(sentence):
+    assert "no banned claims" in failed({**GOOD, "description": GOOD["description"] + sentence})
+
+
+@pytest.mark.xfail(strict=True, reason=(
+    "Known limit of phrase matching: 'the best way to wash it' is advice, not a superlative, "
+    "but it uses the same words as 'the best romper'. Telling them apart needs a check that "
+    "understands meaning, not a word list."))
+def test_advice_using_the_best_is_allowed():
+    sentence = " Wash it the best way for cotton: cold."
+    assert "no banned claims" not in failed({**GOOD, "description": GOOD["description"] + sentence})
+
+
 def test_age_range_with_words_is_accepted():
     listing = {**GOOD, "description": GOOD["description"].replace("0-12 months", "0 to 12 months")}
     assert "age range mentioned" not in failed(listing)

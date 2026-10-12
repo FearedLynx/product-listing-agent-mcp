@@ -96,9 +96,9 @@ guide for each product, checked every draft and saved all 8 listings
 >
 > This rain jacket is made for wet walks to school and puddle days at the park.
 > It is made from recycled polyester with a PU coating, and the seams are taped.
-> The hood is detachable, and reflective details on the back and sleeves help
-> your child be seen on darker days. Choose from Mustard or Navy. Machine wash at
-> 30 °C and do not tumble dry. Suitable for children aged 2-8 years.
+> The hood is detachable, and there are reflective details on the back and
+> sleeves. Choose from Mustard or Navy. Machine wash at 30 °C and do not tumble
+> dry. Suitable for children aged 2-8 years.
 
 For the teether, the agent rewrote the product data's "dishwasher safe" as "goes
 in the dishwasher on the top rack" and avoided "soothing", because the brand
@@ -113,7 +113,26 @@ that go beyond the product data and still passed: "keeps small hands warm",
 
 The rules catch what can be counted or matched (length, materials, banned
 words, certifications). They cannot tell whether a benefit is supported by the
-facts. That is the next check to build.
+facts. In a second run the agent rewrote those four listings without the
+unsupported phrases (the rain jacket above is the revised version), but a
+check for supported claims is still the next thing to build.
+
+## Testing the checker itself
+
+A deliberate test: asking the agent to save a teether listing that called it
+"100% safe" and "the best teether ever". `save_listing` refused it (11/12, rule
+"no banned claims") and nothing was written.
+
+Probing further showed false alarms. The first checker matched banned phrases
+anywhere in the text, so "small **imperfect**ions in the knit" was rejected for
+`perfect`, and "the cuff se**cures** with a stud" for `cures`. Banned phrases
+and certifications are now matched as whole words only, and both sentences are
+in the test set so the false alarm cannot come back.
+
+One case is kept as a known limit (`xfail` in the tests): "wash it **the best**
+way for cotton" is advice, not a superlative, but uses the same words as "the
+best romper". A word list cannot tell the two apart; that also needs a check
+that understands meaning.
 
 ## Next steps
 

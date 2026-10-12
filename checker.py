@@ -19,6 +19,19 @@ BANNED_PHRASES = [
 KNOWN_CERTIFICATIONS = ["GOTS", "OEKO-TEX", "EN 71", "BPA-free", "FSC", "hypoallergenic"]
 
 
+def _find_phrases(phrases: list[str], text: str) -> list[str]:
+    """Phrases that appear in the text as whole words, ignoring case.
+
+    'perfect' matches "a perfect fit" but not "small imperfections".
+    """
+    found = []
+    for phrase in phrases:
+        pattern = r"(?<![\w-])" + re.escape(phrase) + r"(?![\w-])"
+        if re.search(pattern, text, flags=re.IGNORECASE):
+            found.append(phrase)
+    return found
+
+
 def _words(text: str) -> int:
     return len(re.findall(r"\b[\w'-]+\b", text))
 
@@ -64,11 +77,11 @@ def check_listing(product: dict, listing: dict) -> dict:
     rule("age range mentioned", any(v in lower for v in _age_variants(product["age_range"])),
          f"Mention the age range '{product['age_range']}'.")
 
-    found_banned = [p for p in BANNED_PHRASES if p in lower]
+    found_banned = _find_phrases(BANNED_PHRASES, everything)
     rule("no banned claims", not found_banned, f"Remove: {found_banned}")
 
     allowed = {c.lower() for c in product.get("certifications", [])}
-    invented = [c for c in KNOWN_CERTIFICATIONS if c.lower() in lower and c.lower() not in allowed]
+    invented = [c for c in _find_phrases(KNOWN_CERTIFICATIONS, everything) if c.lower() not in allowed]
     rule("no invented certifications", not invented,
          f"The product data does not list {invented}; remove them.")
 
